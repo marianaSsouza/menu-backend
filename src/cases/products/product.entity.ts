@@ -15,7 +15,7 @@ export class Product {
   @Column ({ type: 'text', nullable: true })
   description?: string; //isso significa que a descrição é opcional, ou seja, pode ser nula ou não.
 
-  @Column({ type: 'number', precision: 10, scale: 2 })
+  @Column({ type: 'numeric', precision: 10, scale: 2 })
   price: number;
   
   @Column({ type: 'text', nullable: true })
