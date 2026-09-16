@@ -108,7 +108,7 @@ export class GuestCheckService {
 
   async findOrCreateOpened(spotId: string): Promise<GuestCheck> {
    
-    const opened = await this.findOrCreateOpened(spotId);
+    const opened = await this.findOpenedBySpotId(spotId);
 
     //fluxo do SIM
     if (opened) {
