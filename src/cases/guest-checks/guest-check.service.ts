@@ -28,6 +28,19 @@ export class GuestCheckService {
     private readonly spotRepository: Repository<Spot>,
   ) {}
 
+  // lista as comandas (com a mesa). Se vier o status, filtra por ele (ex.: OPENED)
+  findAll(status?: GuestCheckStatus): Promise<GuestCheck[]> {
+    if (status && !Object.values(GuestCheckStatus).includes(status)) {
+      throw new BadRequestException('Status inválido');
+    }
+
+    return this.guestCheckRepository.find({
+      where: status ? { status } : undefined,
+      relations: { spot: true },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
   async create(dto: CreateGuestCheckDto): Promise<GuestCheck> {
     // Regra 1: Não se abre comanda em mesa inexistente ou inativa.
     const spot = await this.spotRepository.findOneBy({
@@ -93,7 +106,6 @@ export class GuestCheckService {
     return this.guestCheckRepository.save(guestCheck);
   }
 
-
   findOpenedBySpotId(spotId: string): Promise<GuestCheck | null> {
     return this.guestCheckRepository.findOne({
       where: {
@@ -101,13 +113,11 @@ export class GuestCheckService {
         status: GuestCheckStatus.OPENED,
       },
 
-      relations: {spot: true}
-
-    })
+      relations: { spot: true },
+    });
   }
 
   async findOrCreateOpened(spotId: string): Promise<GuestCheck> {
-   
     const opened = await this.findOpenedBySpotId(spotId);
 
     //fluxo do SIM
@@ -115,8 +125,6 @@ export class GuestCheckService {
       return opened;
     }
 
-    return this.create({spotId})
-
+    return this.create({ spotId });
   }
-
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { Order, OrderStatus } from "./entities/order-entity";
 import { CreateOrderDto, CreateOrderItemDto } from "./dto/create-order";
 import { OrderItem } from "./entities/order-item.entity";
@@ -64,8 +64,13 @@ export class OrderService {
 
   }
 
+  // lista os pedidos já com a comanda (e a mesa) e os itens (e o produto)
   findAll(): Promise<Order[]> {
     return this.orderRepository.find({
+      relations: {
+        guestCheck: { spot: true },
+        items: { product: true },
+      },
       order: { createdAt: 'ASC'} 
     })
   }
@@ -81,35 +86,16 @@ export class OrderService {
 
     }
 
+    // usado para mudar o status do pedido. As transições são livres:
+    // qualquer status pode ir para qualquer outro
     async updateStatus(
       id: string, 
-      dto: UpdateOrderStatusDto) : Promise<Order> { //usado para mudar o status do pedido
+      dto: UpdateOrderStatusDto) : Promise<Order> {
         const order = await this.findOne(id)
 
-        //determino a sequencia obrigatória de mudança de status
-        const nextStatus: Record<OrderStatus, OrderStatus | undefined> = {
-          [OrderStatus.NEW]:  OrderStatus.PREPARING, //esse new é que caso ele nao encontre o pedido, vai criar um novo
-          [OrderStatus.PREPARING]: OrderStatus.READY,
-          [OrderStatus.READY]: OrderStatus.DELIVERED,
-          [OrderStatus.DELIVERED]: undefined
-        
-        }
-
-        if (nextStatus[dto.status] !== dto.status) {
-          throw new BadRequestException('Status inválido')
-        }
-
-        //forço a mudança de status
         order.status = dto.status
 
-        //gravo a alteração no banco
         return this.orderRepository.save(order)
-        
-        
-        // isso <> cria um atributo e o que estiver dentro significa o tipo 
-
-
-
     }
 
 }

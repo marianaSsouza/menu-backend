@@ -1,24 +1,27 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 
 import { GuestCheckService } from './guest-check.service';
-import { GuestCheck } from './guest-check.entity';
+import { GuestCheck, GuestCheckStatus } from './guest-check.entity';
 import { CreateGuestCheckDto } from './dto/create-guest-check';
 
 @Controller('guest-checks')
 export class GuestCheckController {
   constructor(private readonly service: GuestCheckService) {}
- 
+
+  @Get()
+  findAll(@Query('status') status?: GuestCheckStatus): Promise<GuestCheck[]> {
+    return this.service.findAll(status);
+  }
+
   @Get(':id')
   findOne(
     @Param('id', ParseUUIDPipe)
@@ -41,10 +44,5 @@ export class GuestCheckController {
     id: string,
   ): Promise<GuestCheck> {
     return this.service.close(id);
-
-
   }
-
-
-  
 }
