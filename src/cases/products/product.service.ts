@@ -17,8 +17,12 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  findAll(): Promise<Product[]> { //esse metodo retorna todos os produtos, ordenados por nome e com a categoria relacionada
+  findAll(categoryId?: string): Promise<Product[]> { //esse metodo retorna todos os produtos, ordenados por nome e com a categoria relacionada
     return this.productRepository.find({
+      where: {
+        active: true,
+        ...(categoryId && { category: { id: categoryId } }) //se o categoryId for passado, adiciona a condição de filtro por categoria
+      },
       order: { name: 'ASC' },
       relations: {category: true},
     });
